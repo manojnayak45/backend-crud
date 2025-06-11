@@ -1,21 +1,30 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
-// Check if we are in production (important for setting secure cookies)
+// Environment check for production
 const isProd = process.env.NODE_ENV === "production";
 
-// Helper to generate access & refresh tokens
+// Cookie settings for secure cross-origin requests
+const cookieOptions = {
+  httpOnly: true,
+  secure: true, // Always true in production
+  sameSite: "None", // Required for cross-origin (e.g., Vercel <-> Render)
+};
+
+// Generate access and refresh tokens
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { id: user._id },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: "15m" }
   );
+
   const refreshToken = jwt.sign(
     { id: user._id },
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: "7d" }
   );
+
   return { accessToken, refreshToken };
 };
 
@@ -31,7 +40,6 @@ exports.signup = async (req, res) => {
 };
 
 // ✅ Login Controller
-// ✅ Login Controller (update this!)
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -44,18 +52,15 @@ exports.login = async (req, res) => {
   const { accessToken, refreshToken } = generateTokens(user);
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "Lax",
+    ...cookieOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "Lax",
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
-  // ✅ This line was missing!
   res.status(200).json({ message: "Logged in successfully", user });
 };
 
@@ -73,8 +78,8 @@ exports.refresh = (req, res) => {
   jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
     if (err) {
       console.error("❌ Invalid refresh token:", err.message);
-      res.clearCookie("refreshToken");
-      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken", cookieOptions);
+      res.clearCookie("accessToken", cookieOptions);
       return res.sendStatus(403);
     }
 
@@ -84,9 +89,8 @@ exports.refresh = (req, res) => {
     });
 
     res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
     });
 
     res.json({ message: "Token refreshed" });
@@ -95,7 +99,7 @@ exports.refresh = (req, res) => {
 
 // ✅ Logout Controller
 exports.logout = (req, res) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
   res.json({ message: "Logged out successfully" });
 };
