@@ -12,11 +12,7 @@ const verifyAccessToken = require("../middleware/auth");
 router.post("/signup", signup);
 router.post("/login", login);
 router.get("/refresh", refresh);
-router.post("/logout", (req, res) => {
-  res.clearCookie("refreshToken");
-  res.clearCookie("accessToken");
-  return res.json({ message: "Logged out successfully" });
-});
+router.post("/logout", logout); // ✅ import from controller
 
 router.get("/profile", verifyAccessToken, (req, res) => {
   if (req.user) {

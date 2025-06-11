@@ -7,8 +7,9 @@ const isProd = process.env.NODE_ENV === "production";
 // Cookie settings for secure cross-origin requests
 const cookieOptions = {
   httpOnly: true,
-  secure: true, // Always true in production
-  sameSite: "None", // Required for cross-origin (e.g., Vercel <-> Render)
+  secure: isProd, // true in production
+  sameSite: isProd ? "None" : "Lax", // for cross-origin cookies
+  path: "/", // Always set path
 };
 
 // Generate access and refresh tokens
