@@ -12,7 +12,7 @@ const userDetailsRoutes = require("./routes/userDetailsRoutes");
 const app = express();
 app.use(
   cors({
-    origin: "https://frontend-usercrud.vercel.app/", // ✅ Must match frontend
+    origin: "https://frontend-usercrud.vercel.app", // ✅ Must match frontend
     credentials: true, // ✅ Allows cookies
   })
 );
