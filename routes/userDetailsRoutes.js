@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const UserDetails = require("../models/UserDetails");
-const verifyAccessToken = require("../middleware/verifyAccessToken");
+const verifyAccessToken = require("../middleware/auth");
 
 // Add user detail
 router.post("/", verifyAccessToken, async (req, res) => {
