@@ -99,7 +99,14 @@ exports.refresh = (req, res) => {
 
 // ✅ Logout Controller
 exports.logout = (req, res) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  };
+
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("refreshToken", cookieOptions);
-  res.json({ message: "Logged out successfully" });
+
+  return res.json({ message: "Logged out successfully" });
 };
